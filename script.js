@@ -81,11 +81,15 @@ function trackBrowser() {
   } else if (tracksort.value == "likes") {
     tracks.sort((a, b) => b.likesCount - a.likesCount)
   } else if (tracksort.value == "ratio") {
+    tracks = tracks.filter((filterTrack) => filterTrack.likesCount > 0 && filterTrack.dislikesCount > 0)
     tracks.sort((a, b) => b.likesCount/(b.likesCount+b.dislikesCount) - a.likesCount/(a.likesCount+a.dislikesCount))
   } else if (tracksort.value == "players") {
     tracks.sort((a, b) => b.leaderboardTotalCount - a.leaderboardTotalCount)
   } else if (tracksort.value == "length") {
+    tracks = tracks.filter((filterTrack) => filterTrack.leaderboard.length > 0)
     tracks.sort((a, b) => a.leaderboard[0].time - b.leaderboard[0].time)
+  } else if (tracksort.value == "unfinished") {
+    tracks = tracks.filter((filterTrack) => filterTrack.leaderboard.length == 0)
   }
               
   var html = "";
