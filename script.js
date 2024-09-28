@@ -89,7 +89,7 @@ function trackBrowser() {
   }
               
   var html = "";
-  for (let i = 0+trackPage*15; i < 15+trackPage*15 && i+trackPage*15 < tracks.length; i++) {
+  for (let i = trackPage*15; i < 15+trackPage*15 && i < tracks.length; i++) {
     html += '<div class="gallery"><a target="_blank" href="https://dashcraft.io/?t=' + tracks[i]._id + '">'
     html += '<img src="https://cdn.dashcraft.io/v2/prod/track-thumbnail/sm/' + tracks[i]._id + '.jpg?v=4">'
     html += '<div class="desc">' + playerHTML(tracks[i].user._id) + '</div></a></div>'
