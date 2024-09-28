@@ -19,7 +19,7 @@
     </label>
   </div>
   <div class="topstuff">
-    <button type="button" onclick="usePresetInfo()">Get Info</button>
+    <button type="button" onclick="fetchInfo()">Get Info</button>
   </div>
   <br><br><br><br>
   <hr>
@@ -66,38 +66,38 @@
     <hr width="1" size="650" style="float:left; width: 0px;">
 
     <div class="leaderboardChart" id="myChart" style="max-width:700px; height:400px"></div>
-  </div>
 
-  <hr>
+    <hr>
 
-  <div class="topstuff">
-    <h2>Player Lookup</h2>
-    <input id="usernameInput" placeholder="Username">
-  </div>
-  <div id="playerList"></div>
+    <div class="topstuff">
+      <h2>Player Lookup</h2>
+      <input id="usernameInput" placeholder="Username">
+    </div>
+    <div id="playerList"></div>
 
-  <hr>
-  <div class="topstuff">
-    <h2>Tracks</h2>
-    <select id="trackdropdown">
-      <option value="new">New</option>
-      <option value="likes">Most Likes</option>
-      <option value="ratio">Highest Like/Dislike Ratio</option>
-      <option value="players">Longest Leaderboard Length</option>
-      <option value="length">Shortest</option>
-      <option value="position">Your Position (Uses the user from Player Lookup)</option>
-    </select>
-  </div>
-  <div id="trackBrowser" style="margin-bottom: 50px"></div>
-  <div id="trackpage" style="width: 200px; margin-left: auto; margin-right: auto; margin-top: 20px">
-    <button type="button" onclick="trackPageLeft()">&lt;</button><b>Page 1</b><button type="button" onclick="trackPageRight()" style="float:right;">&gt;</button>
-  </div>
+    <hr>
+    <div class="topstuff">
+      <h2>Tracks</h2>
+      <select id="trackdropdown">
+        <option value="new">New</option>
+        <option value="likes">Most Likes</option>
+        <option value="ratio">Highest Like/Dislike Ratio</option>
+        <option value="players">Longest Leaderboard Length</option>
+        <option value="length">Shortest</option>
+        <option value="position">Your Position (Uses the user from Player Lookup)</option>
+      </select>
+    </div>
+    <div id="trackBrowser" style="margin-bottom: 50px"></div>
+    <div id="trackpage" style="width: 200px; margin-left: auto; margin-right: auto; margin-top: 20px">
+      <button type="button" onclick="trackPageLeft()">&lt;</button><b>Page 1</b><button type="button" onclick="trackPageRight()" style="float:right;">&gt;</button>
+    </div>
 
 
-  <script type="text/javascript" src="presetTracks.json"></script>
-  <script type="text/javascript" src="presetProfiles.json"></script>
-  <script src="script.js"></script>
-</body>
+    <script type="text/javascript" src="presetTracks.json"></script>
+    <script type="text/javascript" src="presetProfiles.json"></script>
+    <script src="script.js"></script>
+  </body>
+</div>
 
 
 </html>

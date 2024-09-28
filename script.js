@@ -19,7 +19,7 @@ const charthtml = document.getElementById("myChart");
 const usernameInput = document.getElementById("usernameInput")
 const playerList = document.getElementById("playerList")
 let verifiedonlybackup = false
-document.getElementById("data").hidden = false;
+
 
 google.charts.load('current', { packages: ['corechart'] });
 
