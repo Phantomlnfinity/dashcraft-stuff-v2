@@ -1,3 +1,4 @@
+
 let fetchedtracks = [];
 let tracks = [];
 let IDarr = [];
@@ -6,7 +7,7 @@ let profiles = [];
 let working = false;
 let page = 0;
 let trackPage = 0;
-let leaderboard = []
+let leaderboard = [];
 const numbers = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"]
 const verifiedonly = document.getElementById("verifiedonly");
 const removeserphal = document.getElementById("removeserphal");
@@ -15,12 +16,15 @@ const leaderboarddropdown = document.getElementById("leaderboarddropdown")
 const leaderboarddisplay = document.getElementById("leaderboardlist")
 const tracksort = document.getElementById("trackdropdown");
 const charthtml = document.getElementById("myChart");
+const usernameInput = document.getElementById("usernameInput")
+const playerList = document.getElementById("playerList")
 let verifiedonlybackup = false
 document.getElementById("data").hidden = false;
 
 google.charts.load('current', { packages: ['corechart'] });
 
 
+usernameInput.addEventListener('input', function() {if (usernameInput.value != "") {playerLookup()} else {playerList.innerHTML = ""}})
 recent25.addEventListener('change', calculate)
 removeserphal.addEventListener('change', calculate)
 leaderboarddropdown.addEventListener('change', calculate)
@@ -50,6 +54,21 @@ function trackPageRight() {
   if (trackPage < Math.floor(tracks.length / 15)) {
     trackPage++;
     trackBrowser()
+  }
+}
+
+
+
+function playerLookup() {
+  const filteredPlayers = players.filter((player) => player.username.includes(usernameInput.value))
+  console.log(filteredPlayers)
+  playerList.innerHTML = ""
+  for (let i = 0; i < filteredPlayers.length; i++) {
+    playerList.innerHTML += "<br>" + playerHTML(filteredPlayers[i].id)
+  }
+
+  if (filteredPlayers.length == 1) {
+    playerList.innerHTML += "<br>Level " + (filteredPlayers[0].levelData.level + 1) + " (" + filteredPlayers[0].levelData.xpInLevel + "/" + filteredPlayers[0].levelData.totalXpInLevel + ") (" + filteredPlayers[0].levelData.totalXp + " total)"
   }
 }
 
@@ -145,6 +164,27 @@ function drawChart(data1, type) {
   const chart = new chartType(charthtml);
   chart.draw(data, options);
 
+}
+
+async function usePresetInfo() {
+  fetch1 = fetch('./presetTracks.json')
+    .then((response) => response.json())
+    .then((json) => {
+      return json;
+    });
+  
+  fetch2 = fetch('./presetProfiles.json')
+    .then((response) => response.json())
+    .then((json) => {
+      return json;
+    });
+
+
+  fetchedtracks = await fetch1
+  profiles = await fetch2
+  console.log(fetchedtracks)
+  console.log(profiles)
+  calculate();
 }
 
 async function fetchInfo() {
@@ -274,6 +314,8 @@ async function fetchInfo() {
     console.log("Profile fetch time: " + (Date.now() - start) + "ms")
   }
   working = false;
+  console.log(fetchedtracks);
+  console.log(profiles)
   calculate()
 }
 
@@ -295,14 +337,14 @@ function calculate() {
   console.log("Number of tracks: " + tracks.length)
   for (let i = 0; i < tracks.length; i++) {
     if (!players.find(x => x.id == tracks[i].user._id)) {
-      players.push({ username: tracks[i].user.username, id: tracks[i].user._id, totalPositions: 0, totalPos: 0, dcpoints: 0, tmpoints: 0, wrcount: 0, tracks: 0, totalTime: 0, level: tracks[i].user.levelData.level + 1, league: tracks[i].user.leagueNr + 1 })
+      players.push({ username: tracks[i].user.username, id: tracks[i].user._id, totalPositions: 0, totalPos: 0, dcpoints: 0, tmpoints: 0, wrcount: 0, tracks: 0, totalTime: 0, levelData: {level: tracks[i].user.levelData.level + 1, xpInLevel: tracks[i].user.levelData.xpInLevel, totalXpInLevel: tracks[i].user.levelData.totalXpInLevel, totalXp: tracks[i].user.levelData.totalXp}, league: tracks[i].user.leagueNr + 1 })
     }
     var player = players.find(x => x.id == tracks[i].user._id);
     player.tracks += 1;
 
     for (let j = 0; j < tracks[i].leaderboard.length; j++) {
       if (!players.find(x => x.id == tracks[i].leaderboard[j].user._id)) {
-        players.push({ username: tracks[i].leaderboard[j].user.username, id: tracks[i].leaderboard[j].user._id, totalPositions: 0, totalPos: 0, dcpoints: 0, tmpoints: 0, wrcount: 0, tracks: 0, totalTime: 0, level: tracks[i].leaderboard[j].user.levelData.level + 1, league: tracks[i].leaderboard[j].user.leagueNr + 1 })
+        players.push({ username: tracks[i].leaderboard[j].user.username, id: tracks[i].leaderboard[j].user._id, totalPositions: 0, totalPos: 0, dcpoints: 0, tmpoints: 0, wrcount: 0, tracks: 0, totalTime: 0, levelData: {level: tracks[i].user.levelData.level + 1, xpInLevel: tracks[i].user.levelData.xpInLevel, totalXpInLevel: tracks[i].user.levelData.totalXpInLevel, totalXp: tracks[i].user.levelData.totalXp}, league: tracks[i].leaderboard[j].user.leagueNr + 1 })
       }
       var player = players.find(x => x.id == tracks[i].leaderboard[j].user._id)
       player.totalPositions += 1
@@ -352,7 +394,7 @@ function calculate() {
       sortdir = "ascending"
       valuetype = "Time"
     } else if (leaderboarddropdown.value == "level") {
-      leaderboard.push([players[i].username, players[i].level])
+      leaderboard.push([players[i].username, players[i].levelData.level])
       charttype = "bar"
       sortdir = "descending"
       valuetype = "Level"
