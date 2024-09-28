@@ -19,7 +19,7 @@
     </label>
   </div>
   <div class="topstuff">
-    <button type="button" onclick="fetchInfo()">Get Info</button>
+    <button type="button" onclick="usePresetInfo()">Get Info</button>
   </div>
   <br><br><br><br>
   <hr>
@@ -68,6 +68,13 @@
     <div class="leaderboardChart" id="myChart" style="max-width:700px; height:400px"></div>
   </div>
 
+  <hr>
+
+  <div class="topstuff">
+    <h2>Player Lookup</h2>
+    <input id="usernameInput" placeholder="Username">
+  </div>
+  <div id="playerList"></div>
 
   <hr>
   <div class="topstuff">
@@ -87,7 +94,8 @@
   </div>
 
 
-
+  <script type="text/javascript" src="presetTracks.json"></script>
+  <script type="text/javascript" src="presetProfiles.json"></script>
   <script src="script.js"></script>
 </body>
 
