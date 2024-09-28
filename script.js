@@ -101,7 +101,7 @@ function trackBrowser() {
 function playerHTML(player) {
   var playerhtml = ""
   var playerdata = players.find(p => p.id == player)
-  playerhtml = "<img src='/leagues/" + playerdata.league + ".png' style='width: 14px; height: 14px'>"
+  playerhtml = "<img src='leagues/" + playerdata.league + ".png' style='width: 14px; height: 14px'>"
   playerhtml += " <a href='https://dashcraft.io/?u=" + player + "' target='_blank' style='color: white;'>"
   playerhtml += playerdata.username + "</a>"
   return playerhtml
