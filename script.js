@@ -26,9 +26,9 @@ google.charts.load('current', { packages: ['corechart'] });
 
 
 usernameInput.addEventListener('input', playerLookup)
-recent25.addEventListener('change', calculate)
-removeserphal.addEventListener('change', calculate)
-leaderboarddropdown.addEventListener('change', calculate)
+recent25.addEventListener('change', function() {trackPage = 0; page = 0; calculate()})
+removeserphal.addEventListener('change', function() {page = 0; calculate()})
+leaderboarddropdown.addEventListener('change', function() {trackPage = 0; page = 0; calculate()})
 tracksort.addEventListener('change', function() {trackPage = 0; calculate()})
 
 function lbPageLeft() {
@@ -72,7 +72,11 @@ function playerLookup() {
     }
 
     if (filteredPlayers.length == 1) {
-      playerList.innerHTML += "<br>Level " + (filteredPlayers[0].levelData.level + 1) + " (" + filteredPlayers[0].levelData.xpInLevel + "/" + filteredPlayers[0].levelData.totalXpInLevel + ") (" + filteredPlayers[0].levelData.totalXp + " total)"
+      if (filteredPlayers[0].levelData.level != 100) {
+        playerList.innerHTML += "<br>Level " + filteredPlayers[0].levelData.level + " (" + filteredPlayers[0].levelData.xpInLevel + "/" + filteredPlayers[0].levelData.totalXpInLevel + ") (" + filteredPlayers[0].levelData.totalXp + " total)"
+      } else {
+        playerList.innerHTML += "<br>Level 100 (Max) (229124 total)"
+      }
       if (tracksort.value == "ownTracks" || tracksort.value == "position") {
         trackPage = 0
       }
@@ -83,7 +87,7 @@ function playerLookup() {
 
 
 function trackBrowser() {
-  tracks = fetchedtracks;
+  //tracks = fetchedtracks;
   document.getElementById("trackpage").innerHTML = '<button type="button" onclick="trackPageLeft()">&lt;</button><b>Page ' + (trackPage+1) + '</b><button type="button" onclick="trackPageRight()" style="float:right;">&gt;</button>'
   if (tracksort.value == "new") {
     tracks.sort((a, b) => fetchedtracks.findIndex((track) => a._id == track._id) - fetchedtracks.findIndex((track) => b._id == track._id))
@@ -399,7 +403,7 @@ function calculate() {
 
     for (let j = 0; j < tracks[i].leaderboard.length; j++) {
       if (!players.find(x => x.id == tracks[i].leaderboard[j].user._id)) {
-        players.push({ username: tracks[i].leaderboard[j].user.username, id: tracks[i].leaderboard[j].user._id, totalPositions: 0, totalPos: 0, dcpoints: 0, tmpoints: 0, wrcount: 0, tracks: 0, totalTime: 0, levelData: {level: tracks[i].user.levelData.level + 1, xpInLevel: tracks[i].user.levelData.xpInLevel, totalXpInLevel: tracks[i].user.levelData.totalXpInLevel, totalXp: tracks[i].user.levelData.totalXp}, league: tracks[i].leaderboard[j].user.leagueNr + 1 })
+        players.push({ username: tracks[i].leaderboard[j].user.username, id: tracks[i].leaderboard[j].user._id, totalPositions: 0, totalPos: 0, dcpoints: 0, tmpoints: 0, wrcount: 0, tracks: 0, totalTime: 0, levelData: {level: tracks[i].leaderboard[j].user.levelData.level + 1, xpInLevel: tracks[i].leaderboard[j].user.levelData.xpInLevel, totalXpInLevel: tracks[i].leaderboard[j].user.levelData.totalXpInLevel, totalXp: tracks[i].leaderboard[j].user.levelData.totalXp}, league: tracks[i].leaderboard[j].user.leagueNr + 1 })
       }
       var player = players.find(x => x.id == tracks[i].leaderboard[j].user._id)
       player.totalPositions += 1
