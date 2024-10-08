@@ -8,6 +8,7 @@ let working = false;
 let page = 0;
 let trackPage = 0;
 let leaderboard = [];
+let filteredPlayers = [];
 const numbers = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"]
 const verifiedonly = document.getElementById("verifiedonly");
 const removeserphal = document.getElementById("removeserphal");
@@ -24,7 +25,7 @@ let verifiedonlybackup = false
 google.charts.load('current', { packages: ['corechart'] });
 
 
-usernameInput.addEventListener('input', function() {if (usernameInput.value != "") {playerLookup()} else {playerList.innerHTML = ""}})
+usernameInput.addEventListener('input', playerLookup)
 recent25.addEventListener('change', calculate)
 removeserphal.addEventListener('change', calculate)
 leaderboarddropdown.addEventListener('change', calculate)
@@ -60,22 +61,30 @@ function trackPageRight() {
 
 
 function playerLookup() {
-  const filteredPlayers = players.filter((player) => player.username.includes(usernameInput.value))
-  console.log(filteredPlayers)
   playerList.innerHTML = ""
-  for (let i = 0; i < filteredPlayers.length; i++) {
-    playerList.innerHTML += "<br>" + playerHTML(filteredPlayers[i].id)
-  }
 
-  if (filteredPlayers.length == 1) {
-    playerList.innerHTML += "<br>Level " + (filteredPlayers[0].levelData.level + 1) + " (" + filteredPlayers[0].levelData.xpInLevel + "/" + filteredPlayers[0].levelData.totalXpInLevel + ") (" + filteredPlayers[0].levelData.totalXp + " total)"
+  filteredPlayers = []
+  if (usernameInput.value.length != 0) {
+    filteredPlayers = players.filter((player) => player.username.includes(usernameInput.value))
+    console.log(filteredPlayers)
+    for (let i = 0; i < filteredPlayers.length; i++) {
+      playerList.innerHTML += "<br>" + playerHTML(filteredPlayers[i].id)
+    }
+
+    if (filteredPlayers.length == 1) {
+      playerList.innerHTML += "<br>Level " + (filteredPlayers[0].levelData.level + 1) + " (" + filteredPlayers[0].levelData.xpInLevel + "/" + filteredPlayers[0].levelData.totalXpInLevel + ") (" + filteredPlayers[0].levelData.totalXp + " total)"
+      if (tracksort.value == "ownTracks" || tracksort.value == "position") {
+        trackPage = 0
+      }
+    }
   }
+  trackBrowser();
 }
 
 
 function trackBrowser() {
+  tracks = fetchedtracks;
   document.getElementById("trackpage").innerHTML = '<button type="button" onclick="trackPageLeft()">&lt;</button><b>Page ' + (trackPage+1) + '</b><button type="button" onclick="trackPageRight()" style="float:right;">&gt;</button>'
-  console.log(tracks)
   if (tracksort.value == "new") {
     tracks.sort((a, b) => fetchedtracks.findIndex((track) => a._id == track._id) - fetchedtracks.findIndex((track) => b._id == track._id))
   } else if (tracksort.value == "likes") {
@@ -90,13 +99,55 @@ function trackBrowser() {
     tracks.sort((a, b) => a.leaderboard[0].time - b.leaderboard[0].time)
   } else if (tracksort.value == "unfinished") {
     tracks = tracks.filter((filterTrack) => filterTrack.leaderboard.length == 0)
+  } else if (tracksort.value == "position") {
+    if (filteredPlayers.length == 1) {
+      tracks.sort(function(a, b) {
+        recordA = a.leaderboard.findIndex((c) => c.user._id == filteredPlayers[0].id)
+        recordB = b.leaderboard.findIndex((c) => c.user._id == filteredPlayers[0].id)
+        if (recordA >= 0 && recordB >= 0) {
+          return (recordB + (b.leaderboard[recordB].time - b.leaderboard[0].time)/1000) - (recordA + (a.leaderboard[recordA].time - a.leaderboard[0].time)/1000)
+        } else if (recordA >= 0) {
+          return 1
+        } else if (recordB >= 0) {
+          return -1
+        } else {
+          return 0
+        }
+      })
+    } else {
+      tracks = [];
+    }
+  } else if (tracksort.value == "ownTracks") {
+    if (filteredPlayers.length == 1) {
+      tracks = tracks.filter((filterTrack) => filterTrack.user._id == filteredPlayers[0].id)
+    } else {
+      tracks = [];
+    }
   }
               
   var html = "";
-  for (let i = trackPage*15; i < 15+trackPage*15 && i < tracks.length; i++) {
-    html += '<div class="gallery"><a target="_blank" href="https://dashcraft.io/?t=' + tracks[i]._id + '">'
-    html += '<img src="https://cdn.dashcraft.io/v2/prod/track-thumbnail/sm/' + tracks[i]._id + '.jpg?v=4">'
-    html += '<div class="desc">' + playerHTML(tracks[i].user._id) + '</div></a></div>'
+  for (let i = trackPage*15; i < trackPage*15+15; i++) {
+    if (i < tracks.length) {
+      html += '<div class="gallery"><a target="_blank" href="https://dashcraft.io/?t=' + tracks[i]._id + '">'
+      html += '<img src="https://cdn.dashcraft.io/v2/prod/track-thumbnail/sm/' + tracks[i]._id + '.jpg?v=4">'
+      html += '<div class="desc">' + playerHTML(tracks[i].user._id)
+      html += '<br><img src = "like.png"style="width: 14px; height: 14px"> ' + tracks[i].likesCount + '/' + tracks[i].dislikesCount
+      if (filteredPlayers.length == 1) {
+        if (tracks[i].leaderboard.find((c) => c.user._id == filteredPlayers[0].id)) {
+          var pos = tracks[i].leaderboard.findIndex((c) => c.user._id == filteredPlayers[0].id) + 1
+        } else {
+          var pos = "N/A"
+        }
+      } else {
+        var pos = "N/A"
+      }
+      html += '<br><img src = "podium.png" style="width: 14px; height: 14px"> ' +  pos
+
+      
+      html += '</div></a></div>'
+    } else {
+      html += '<div class="gallery"><img><div class="desc"><br><br><br></div></div>'
+    }
   }
   document.getElementById("trackBrowser").innerHTML = html;
 }
