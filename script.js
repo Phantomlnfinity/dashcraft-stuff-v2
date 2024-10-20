@@ -293,19 +293,19 @@ async function usePresetInfo() {
   if (verifiedonly.checked) {
     verifiedonlychecked = true
 
-    fetch1 = fetch('./presetTracks.json')
+    fetch1 = fetch('https://github.com/Phantomlnfinity/dashcraft-stuff-v2/blob/gh-pages/presetTracks.json/?raw=true')
       .then((response) => response.json())
       .then((json) => {
         return json;
       });
   
-    fetch2 = fetch('./presetProfiles.json')
+    fetch2 = fetch('https://github.com/Phantomlnfinity/dashcraft-stuff-v2/blob/gh-pages/presetProfiles.json?raw=true')
       .then((response) => response.json())
       .then((json) => {
         return json;
       });
 
-    fetch3 = fetch('./presetJson.json')
+    fetch3 = fetch('https://github.com/Phantomlnfinity/dashcraft-stuff-v2/blob/gh-pages/presetJson.json/?raw=true')
       .then((response) => response.json())
       .then((json) => {
         return json;
@@ -320,7 +320,7 @@ async function usePresetInfo() {
       };
   } else {
     verifiedonlychecked = false
-    fetch1 = fetch('./presetGlobal.json')
+    fetch1 = fetch('https://github.com/Phantomlnfinity/dashcraft-stuff-v2/blob/gh-pages/presetGlobal.json?raw=true')
       .then((response) => response.json())
       .then((json) => {
         return json;
