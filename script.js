@@ -158,7 +158,9 @@ function trackBrowser() {
     tracks.sort((a, b) => b.leaderboardTotalCount - a.leaderboardTotalCount)
   } else if (tracksort.value == "length") {
     tracks = tracks.filter((filterTrack) => filterTrack.leaderboard.length > 0)
-    tracks.sort((a, b) => a.leaderboard[0].time - b.leaderboard[0].time)
+    tracks.sort((a, b) => b.leaderboard[0].time - a.leaderboard[0].time)
+  } else if (tracksort.value == "objects") {
+    tracks.sort((a, b) => b.json.trackPieces.length - a.json.trackPieces.length)
   } else if (tracksort.value == "unfinished") {
     tracks = tracks.filter((filterTrack) => filterTrack.leaderboard.length == 0)
   } else if (tracksort.value == "position") {
@@ -286,36 +288,51 @@ function drawChart(data1, type) {
 }
 
 async function usePresetInfo() {
-  fetch1 = fetch('./presetTracks.json')
-    .then((response) => response.json())
-    .then((json) => {
-      return json;
-    });
+  loadingProgress.innerHTML = "Fetching..."
+
+  if (verifiedonly.checked) {
+    verifiedonlychecked = true
+
+    fetch1 = fetch('./presetTracks.json')
+      .then((response) => response.json())
+      .then((json) => {
+        return json;
+      });
   
-  fetch2 = fetch('./presetProfiles.json')
-    .then((response) => response.json())
-    .then((json) => {
-      return json;
-    });
+    fetch2 = fetch('./presetProfiles.json')
+      .then((response) => response.json())
+      .then((json) => {
+        return json;
+      });
 
-  fetch3 = fetch('./presetJson.json')
-  .then((response) => response.json())
-  .then((json) => {
-    return json;
-  });
+    fetch3 = fetch('./presetJson.json')
+      .then((response) => response.json())
+      .then((json) => {
+        return json;
+      });
+
+      fetchedtracks = await fetch1
+      profiles = await fetch2
+      fetchedjson = await fetch3
+
+      for (let i = 0; i < fetchedtracks.length; i++) {
+        fetchedtracks[i].json = fetchedjson[i]
+      };
+  } else {
+    verifiedonlychecked = false
+    fetch1 = fetch('./presetGlobal.json')
+      .then((response) => response.json())
+      .then((json) => {
+        return json;
+      });
+
+    fetchedtracks = await fetch1
+    
+  }
+  
 
 
-  fetchedtracks = await fetch1
-  profiles = await fetch2
-  fetchedjson = await fetch3
-  for (let i = 0; i < fetchedtracks.length; i++) {
-    fetchedtracks[i].json = fetchedjson[i]
-  };
-
-  console.log(fetchedtracks)
-  console.log(profiles)
-  console.log(fetchedjson)
-
+  loadingProgress.innerHTML = ""
 
   calculate();
 }
@@ -359,7 +376,7 @@ async function fetchInfo() {
           .then((response) => response.json())
           .then((json) => {
             progress += 1
-            loadingProgress.innerHTML = "Fetching Tracks... (" + progress + ")"
+            loadingProgress.innerHTML = "Fetching Tracks... (" + progress * 50 + ")"
             let json1 = json.tracks;
             let IDarr = [];
             for (let a = 0; a < json1.length; a++) {
@@ -402,7 +419,7 @@ async function fetchInfo() {
           .then((response) => response.json())
           .then((json) => {
             progress += 1
-            loadingProgress.innerHTML = "Fetching Tracks... (" + progress * 50 + "/" + IDarr.length + ")"
+            loadingProgress.innerHTML = "Fetching Tracks... (" + progress + "/" + IDarr.length + ")"
             return (json)
           })
       );

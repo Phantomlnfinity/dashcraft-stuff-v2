@@ -17,14 +17,14 @@
     <label class="container"> Verified Only
       <input id="verifiedonly" type="checkbox" checked>
       <span class="checkmark"></span>
-    </label>
+    </label>                  
   </div>
   <div class="topstuff">
     
-    <!-- <button type="button" onclick="usePresetInfo()">Get Info</button> -->
+    <button type="button" onclick="fetchInfo()" style="width: 300px">Get Info</button>
+      
     
-    
-    <button type="button" onclick="fetchInfo()">Get Info</button>
+    <button type="button" onclick="usePresetInfo()" style="width: 300px">Preset Info (outdated but faster)</button>
    
   </div>
 
@@ -92,7 +92,8 @@
         <option value="likes">Most Likes</option>
         <option value="ratio">Highest Like/Dislike Ratio</option>
         <option value="players">Longest Leaderboard Length</option>
-        <option value="length">Shortest</option>
+        <option value="length">Longest</option>
+        <option value="objects">Most Objects</option>
         <option value="unfinished">Unfinished</option>
         <option value="position">Your Position (Uses the user from Player Lookup)</option>
         <option value="ownTracks">Your Tracks (Uses the user from Player Lookup)</option>
@@ -104,8 +105,7 @@
     </div>
 
 
-    <script type="text/javascript" src="presetTracks.json"></script>
-    <script type="text/javascript" src="presetProfiles.json"></script>
+    
     <script src="script.js"></script>
   </body>
 </div>
