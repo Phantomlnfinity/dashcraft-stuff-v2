@@ -105,15 +105,10 @@ function recommendedPoints(track) {
   } else {
     points += 4.5
   }
-  
   points += 3 * track.likesCount / (track.likesCount + track.dislikesCount + 1) // like to dislike ratio
-  
   points += Math.log10(findPlayer(track.user._id).likes + 1) // total player likes
-  
   points += Math.log2(findPlayer(track.user._id).followers + 1) // user followers
-  
   points += track.user.leagueNr / 3
-  
   if (track.leaderboard.length > 0) {
     points += Math.log2(track.json.trackPieces.length / track.leaderboard[0].time) // track pieces/length (deco amount)
   }
@@ -607,7 +602,7 @@ function calculate() {
       sortdir = "descending"
       valuetype = "Followers"
     } else if (leaderboarddropdown.value == "likes" && players[i].followers) {
-      leaderboard.push([players[i].username, players[i].followers])
+      leaderboard.push([players[i].username, players[i].likes])
       charttype = "bar"
       sortdir = "descending"
       valuetype = "Likes"
