@@ -402,7 +402,7 @@ async function fetchInfo() {
           .then((response) => response.json())
           .then((json) => {
             progress += 1
-            loadingProgress.innerHTML = "Fetching Tracks... (" + progress + "/" + IDarr.length + ")"
+            loadingProgress.innerHTML = "Fetching Tracks... (" + progress * 50 + "/" + IDarr.length + ")"
             return (json)
           })
       );
