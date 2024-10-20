@@ -293,19 +293,19 @@ async function usePresetInfo() {
   if (verifiedonly.checked) {
     verifiedonlychecked = true
 
-    fetch1 = fetch('https://github.com/Phantomlnfinity/dashcraft-stuff-v2/blob/gh-pages/presetTracks.json/?raw=true')
+    fetch1 = fetch('https://github.com/Phantomlnfinity/dashcraft-stuff-v2/blob/main/presetTracks.json/?raw=true')
       .then((response) => response.json())
       .then((json) => {
         return json;
       });
   
-    fetch2 = fetch('https://github.com/Phantomlnfinity/dashcraft-stuff-v2/blob/gh-pages/presetProfiles.json?raw=true')
+    fetch2 = fetch('https://github.com/Phantomlnfinity/dashcraft-stuff-v2/blob/main/presetProfiles.json?raw=true')
       .then((response) => response.json())
       .then((json) => {
         return json;
       });
 
-    fetch3 = fetch('https://github.com/Phantomlnfinity/dashcraft-stuff-v2/blob/gh-pages/presetJson.json/?raw=true')
+    fetch3 = fetch('https://github.com/Phantomlnfinity/dashcraft-stuff-v2/blob/main/presetJson.json/?raw=true')
       .then((response) => response.json())
       .then((json) => {
         return json;
