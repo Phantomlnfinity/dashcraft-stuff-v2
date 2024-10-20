@@ -1,5 +1,6 @@
 
 let fetchedtracks = [];
+let fetchedjson = [];
 let tracks = [];
 let IDarr = [];
 let players = [];
@@ -19,7 +20,38 @@ const tracksort = document.getElementById("trackdropdown");
 const charthtml = document.getElementById("myChart");
 const usernameInput = document.getElementById("usernameInput")
 const playerList = document.getElementById("playerList")
+const loadingProgress = document.getElementById("loadingProgress")
 let verifiedonlybackup = false
+
+
+function setPlayerJson(user) {
+  let playerJson = { 
+    username: user.username, 
+    id: user._id, 
+    followers: 0,
+    likes: 0,
+    totalPositions: 0, 
+    totalPos: 0, 
+    dcpoints: 0, 
+    tmpoints: 0, 
+    wrcount: 0, 
+    tracks: 0, 
+    totalTime: 0, 
+    levelData: {
+      level: user.levelData.level + 1, 
+      xpInLevel: user.levelData.xpInLevel, 
+      totalXpInLevel: user.levelData.totalXpInLevel, 
+      totalXp: user.levelData.totalXp
+    }, 
+    league: user.leagueNr + 1 
+  }
+  
+  if (profiles.length > 0) {
+    playerJson.likes = profiles.find((a) => a._id == user._id).likesCount
+    playerJson.followers = profiles.find((a) => a._id == user._id).followersCount
+  }
+  return playerJson
+}
 
 
 google.charts.load('current', { packages: ['corechart'] });
@@ -56,6 +88,37 @@ function trackPageRight() {
     trackPage++;
     trackBrowser()
   }
+}
+
+
+function findPlayer(playerId) {
+  return players.find((a) => a.id == playerId)
+}
+
+
+
+function recommendedPoints(track) {
+  
+  let points = 0;
+  if (track.likesCount / (track.leaderboardTotalCount + 1) < 0.3) {
+    points += 15 * track.likesCount / (track.leaderboardTotalCount + 1) // players to like ratio
+  } else {
+    points += 4.5
+  }
+  
+  points += 3 * track.likesCount / (track.likesCount + track.dislikesCount + 1) // like to dislike ratio
+  
+  points += Math.log10(findPlayer(track.user._id).likes + 1) // total player likes
+  
+  points += Math.log2(findPlayer(track.user._id).followers + 1) // user followers
+  
+  points += track.user.leagueNr / 3
+  
+  if (track.leaderboard.length > 0) {
+    points += Math.log2(track.json.trackPieces.length / track.leaderboard[0].time) // track pieces/length (deco amount)
+  }
+  points -= Math.log10(fetchedtracks.findIndex((a) => a._id == track._id) / 50 + 2); // subtract points from older tracks
+  return points
 }
 
 
@@ -127,6 +190,8 @@ function trackBrowser() {
     } else {
       tracks = [];
     }
+  } else if (tracksort.value == "recommended") {
+    tracks.sort((a, b) => recommendedPoints(b) - recommendedPoints(a))
   }
               
   var html = "";
@@ -238,11 +303,25 @@ async function usePresetInfo() {
       return json;
     });
 
+  fetch3 = fetch('./presetJson.json')
+  .then((response) => response.json())
+  .then((json) => {
+    return json;
+  });
+
 
   fetchedtracks = await fetch1
   profiles = await fetch2
+  fetchedjson = await fetch3
+  for (let i = 0; i < fetchedtracks.length; i++) {
+    fetchedtracks[i].json = fetchedjson[i]
+  };
+
   console.log(fetchedtracks)
   console.log(profiles)
+  console.log(fetchedjson)
+
+
   calculate();
 }
 
@@ -271,6 +350,9 @@ async function fetchInfo() {
 
   let verifiedonlychecked = verifiedonly.checked
 
+  loadingProgress.innerHTML = "Fetching Tracks... (0)"
+  let progress = 0
+
   start = Date.now();
   var done = false
   let j = 0;
@@ -281,6 +363,8 @@ async function fetchInfo() {
         fetch(url + (j * 50 + i) + "&pageSize=50")
           .then((response) => response.json())
           .then((json) => {
+            progress += 1
+            loadingProgress.innerHTML = "Fetching Tracks... (" + progress + ")"
             let json1 = json.tracks;
             let IDarr = [];
             for (let a = 0; a < json1.length; a++) {
@@ -301,6 +385,9 @@ async function fetchInfo() {
 
   console.log("ID fetch time: " + (Date.now() - start) + "ms")
 
+  loadingProgress.innerHTML = "Fetching Tracks... (0/" + IDarr.length + ")"
+  progress = 0
+
   start = Date.now();
   done = false;
   j = 0;
@@ -319,6 +406,8 @@ async function fetchInfo() {
         })
           .then((response) => response.json())
           .then((json) => {
+            progress += 1
+            loadingProgress.innerHTML = "Fetching Tracks... (" + progress + "/" + IDarr.length + ")"
             return (json)
           })
       );
@@ -328,7 +417,43 @@ async function fetchInfo() {
     j += 1
   }
 
+  console.log("Track fetch time: " + (Date.now() - start) + "ms")
+
+
+  loadingProgress.innerHTML = "Fetching Track JSON... (0/" + IDarr.length + ")"
+  progress = 0
+
+  start = Date.now();
+  done = false;
+  j = 0;
+  while (done == false) {
+    var fetches = [];
+    for (let i = 0; i < 50; i++) {
+      if (j * 50 + i >= IDarr.length) {
+        done = true;
+        break;
+      }
+      fetches.push(
+        fetch("https://cdn.dashcraft.io/v2/prod/track/" + IDarr[i + j * 50] + ".json")
+          .then((response) => response.json())
+          .then((json) => {
+            progress += 1
+            loadingProgress.innerHTML = "Fetching Track JSON... (" + progress + "/" + IDarr.length + ")"
+            return (json)
+          })
+      );
+    }
+    const result = await Promise.all(fetches)
+    fetchedjson = fetchedjson.concat(result)
+    j += 1
+  }
+
+  console.log("JSON fetch time: " + (Date.now() - start) + "ms")
+  console.log(fetchedjson)
+
+
   if (verifiedonlychecked == true) {
+
     let playerids = [];
     for (let i = 0; i < fetchedtracks.length; i++) {
       if (!playerids.includes(fetchedtracks[i].user._id)) {
@@ -341,7 +466,8 @@ async function fetchInfo() {
       }
     }
 
-    console.log("Track fetch time: " + (Date.now() - start) + "ms")
+    loadingProgress.innerHTML = "Fetching Profiles... (0/" + playerids.length + ")"
+    progress = 0
 
     start = Date.now();
     done = false;
@@ -361,6 +487,8 @@ async function fetchInfo() {
           })
             .then((response) => response.json())
             .then((json) => {
+              progress += 1
+              loadingProgress.innerHTML = "Fetching Profiles... (" + progress + "/" + playerids.length + ")"
               return (json)                                                      
             })
         );
@@ -373,12 +501,23 @@ async function fetchInfo() {
     console.log("Profile fetch time: " + (Date.now() - start) + "ms")
   }
   working = false;
-  console.log(fetchedtracks);
-  console.log(profiles)
+
+
+  for (let i = 0; i < fetchedtracks.length; i++) {
+    fetchedtracks[i].json = fetchedjson[i]
+  };
+
+  loadingProgress.innerHTML = ""
+
+
+  
   calculate()
 }
 
 function calculate() {
+
+
+
   players = []
   tracks = structuredClone(fetchedtracks)
 
@@ -396,14 +535,14 @@ function calculate() {
   console.log("Number of tracks: " + tracks.length)
   for (let i = 0; i < tracks.length; i++) {
     if (!players.find(x => x.id == tracks[i].user._id)) {
-      players.push({ username: tracks[i].user.username, id: tracks[i].user._id, totalPositions: 0, totalPos: 0, dcpoints: 0, tmpoints: 0, wrcount: 0, tracks: 0, totalTime: 0, levelData: {level: tracks[i].user.levelData.level + 1, xpInLevel: tracks[i].user.levelData.xpInLevel, totalXpInLevel: tracks[i].user.levelData.totalXpInLevel, totalXp: tracks[i].user.levelData.totalXp}, league: tracks[i].user.leagueNr + 1 })
+      players.push(setPlayerJson(tracks[i].user))
     }
     var player = players.find(x => x.id == tracks[i].user._id);
     player.tracks += 1;
 
     for (let j = 0; j < tracks[i].leaderboard.length; j++) {
       if (!players.find(x => x.id == tracks[i].leaderboard[j].user._id)) {
-        players.push({ username: tracks[i].leaderboard[j].user.username, id: tracks[i].leaderboard[j].user._id, totalPositions: 0, totalPos: 0, dcpoints: 0, tmpoints: 0, wrcount: 0, tracks: 0, totalTime: 0, levelData: {level: tracks[i].leaderboard[j].user.levelData.level + 1, xpInLevel: tracks[i].leaderboard[j].user.levelData.xpInLevel, totalXpInLevel: tracks[i].leaderboard[j].user.levelData.totalXpInLevel, totalXp: tracks[i].leaderboard[j].user.levelData.totalXp}, league: tracks[i].leaderboard[j].user.leagueNr + 1 })
+        players.push(setPlayerJson(tracks[i].leaderboard[j].user))
       }
       var player = players.find(x => x.id == tracks[i].leaderboard[j].user._id)
       player.totalPositions += 1
@@ -462,13 +601,13 @@ function calculate() {
       charttype = "pie"
       sortdir = "descending"
       valuetype = "Tracks"
-    } else if (leaderboarddropdown.value == "followers" && profiles.find(a => a._id == players[i].id).followersCount != 0) {
-      leaderboard.push([players[i].username, profiles.find(a => a._id == players[i].id).followersCount])
+    } else if (leaderboarddropdown.value == "followers" && players[i].followers != 0) {
+      leaderboard.push([players[i].username, players[i].followers])
       charttype = "bar"
       sortdir = "descending"
       valuetype = "Followers"
-    } else if (leaderboarddropdown.value == "likes" && profiles.find(a => a._id == players[i].id).likesCount != 0) {
-      leaderboard.push([players[i].username, profiles.find(a => a._id == players[i].id).likesCount])
+    } else if (leaderboarddropdown.value == "likes" && players[i].followers) {
+      leaderboard.push([players[i].username, players[i].followers])
       charttype = "bar"
       sortdir = "descending"
       valuetype = "Likes"
@@ -497,9 +636,10 @@ function calculate() {
   page = 0
   drawLeaderboard()
   trackBrowser()
-  console.log(leaderboard)
 
   document.getElementById("data").hidden = false;
+
+  console.log(players)
 }
 
 

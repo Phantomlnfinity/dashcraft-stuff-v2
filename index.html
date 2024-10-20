@@ -27,7 +27,9 @@
     <button type="button" onclick="fetchInfo()">Get Info</button>
    
   </div>
-  <br><br><br><br>
+
+  <hr style="height:0; border-width:0"><div id="loadingProgress" class="topstuff"></div>
+
   <hr>
 
   <div id="data" hidden>
@@ -86,6 +88,7 @@
       <h2>Tracks</h2>
       <select id="trackdropdown">
         <option value="new">New</option>
+        <option value="recommended">Recommended</option>
         <option value="likes">Most Likes</option>
         <option value="ratio">Highest Like/Dislike Ratio</option>
         <option value="players">Longest Leaderboard Length</option>
