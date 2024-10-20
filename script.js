@@ -629,7 +629,7 @@ function calculate() {
     if (useradded) {
       leaderboard[leaderboard.length - 1].push(players[i])
     }
-  }
+  } 
   if (sortdir == "descending") {
     leaderboard.sort((a, b) => b[1] - a[1])
   } else if (sortdir == "ascending") {
