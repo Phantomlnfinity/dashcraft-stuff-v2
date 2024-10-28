@@ -24,6 +24,17 @@ const loadingProgress = document.getElementById("loadingProgress")
 let verifiedonlybackup = false
 
 
+let progress = 0
+
+
+function findTime(a, time) {
+    if (a.leaderboard.length != 0) {
+        return Math.floor(a.leaderboard[0].time * 100) / 100 == time
+    } else {
+        return false
+    }
+}
+
 function setPlayerJson(user) {
   let playerJson = { 
     username: user.username, 
@@ -337,11 +348,28 @@ async function usePresetInfo() {
   calculate();
 }
 
+async function retryFetch(tries, ...args) {
+  if (tries > 0) {
+    await sleep(5)
+  }
+  if (tries > 20) {
+    return "fail"
+  }
+  tries += 1
+  return await fetch(...args)
+    .then((response) => response.json())
+    .catch(() => {
+      console.log(...args)
+      return retryFetch(tries, ...args)
+    })
+}
+
 async function fetchInfo() {
   if (working) {
     return;
   }
   working = true;
+
 
   if (verifiedonly.checked) {
     document.getElementById("followers").hidden = false;
@@ -363,7 +391,7 @@ async function fetchInfo() {
   let verifiedonlychecked = verifiedonly.checked
 
   loadingProgress.innerHTML = "Fetching Tracks... (0)"
-  let progress = 0
+  progress = 0
 
   start = Date.now();
   var done = false
@@ -371,12 +399,12 @@ async function fetchInfo() {
   while (done == false) {
     var fetches = [];
     for (let i = 0; i < 50; i++) {
+      let tries = 0
       fetches.push(
-        fetch(url + (j * 50 + i) + "&pageSize=50")
-          .then((response) => response.json())
+        retryFetch(tries, url + (j * 50 + i) + "&pageSize=50")
           .then((json) => {
             progress += 1
-            loadingProgress.innerHTML = "Fetching Tracks... (" + progress * 50 + ")"
+            loadingProgress.innerHTML = "Fetching IDs... (" + progress * 50 + ")"
             let json1 = json.tracks;
             let IDarr = [];
             for (let a = 0; a < json1.length; a++) {
@@ -410,13 +438,13 @@ async function fetchInfo() {
         done = true;
         break;
       }
+      let tries = 0
       fetches.push(
-        fetch("https://api.dashcraft.io/trackv2/" + IDarr[i + j * 50] + "?supportsLaps1=true", {
+        retryFetch(tries, "https://api.dashcraft.io/trackv2/" + IDarr[i + j * 50] + "?supportsLaps1=true", {
           headers: {
             'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWM0NmMzNGExYmEyMjQyNGYyZTAwMzIiLCJpbnRlbnQiOiJvQXV0aCIsImlhdCI6MTcwNzM3MTU3Mn0.0JVw6gJhs4R7bQGjr8cKGLE7CLAGvyuMiee7yvpsrWg'
           }
         })
-          .then((response) => response.json())
           .then((json) => {
             progress += 1
             loadingProgress.innerHTML = "Fetching Tracks... (" + progress + "/" + IDarr.length + ")"
@@ -424,8 +452,7 @@ async function fetchInfo() {
           })
       );
     }
-    const result = await Promise.all(fetches)
-    fetchedtracks = fetchedtracks.concat(result)
+    fetchedtracks = fetchedtracks.concat(await Promise.all(fetches))
     j += 1
   }
 
@@ -445,9 +472,9 @@ async function fetchInfo() {
         done = true;
         break;
       }
+      let tries = 0
       fetches.push(
-        fetch("https://cdn.dashcraft.io/v2/prod/track/" + IDarr[i + j * 50] + ".json")
-          .then((response) => response.json())
+        retryFetch(tries, "https://cdn.dashcraft.io/v2/prod/track/" + IDarr[i + j * 50] + ".json")
           .then((json) => {
             progress += 1
             loadingProgress.innerHTML = "Fetching Track JSON... (" + progress + "/" + IDarr.length + ")"
@@ -455,8 +482,7 @@ async function fetchInfo() {
           })
       );
     }
-    const result = await Promise.all(fetches)
-    fetchedjson = fetchedjson.concat(result)
+    fetchedjson = fetchedjson.concat(await Promise.all(fetches))
     j += 1
   }
 
@@ -468,12 +494,14 @@ async function fetchInfo() {
 
     let playerids = [];
     for (let i = 0; i < fetchedtracks.length; i++) {
-      if (!playerids.includes(fetchedtracks[i].user._id)) {
-        playerids.push(fetchedtracks[i].user._id)
-      }
-      for (let j = 0; j < fetchedtracks[i].leaderboard.length; j++) {
-        if (!playerids.includes(fetchedtracks[i].leaderboard[j].user._id)) {
-          playerids.push(fetchedtracks[i].leaderboard[j].user._id)
+      if (fetchedtracks[i] != "fail") {
+        if (!playerids.includes(fetchedtracks[i].user._id)) {
+          playerids.push(fetchedtracks[i].user._id)
+        }
+        for (let j = 0; j < fetchedtracks[i].leaderboard.length; j++) {
+          if (!playerids.includes(fetchedtracks[i].leaderboard[j].user._id)) {
+            playerids.push(fetchedtracks[i].leaderboard[j].user._id)
+          }
         }
       }
     }
@@ -491,22 +519,42 @@ async function fetchInfo() {
           done = true;
           break;
         }
+        let tries = 0
         fetches.push(
-          fetch("https://api.dashcraft.io/userv2/" + playerids[i + j * 50], {
+          retryFetch(tries, "https://api.dashcraft.io/userv2/" + playerids[i + j * 50], {
             headers: {
               'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWM0NmMzNGExYmEyMjQyNGYyZTAwMzIiLCJpbnRlbnQiOiJvQXV0aCIsImlhdCI6MTcwNzM3MTU3Mn0.0JVw6gJhs4R7bQGjr8cKGLE7CLAGvyuMiee7yvpsrWg'
             }
           })
-            .then((response) => response.json())
+            
             .then((json) => {
               progress += 1
               loadingProgress.innerHTML = "Fetching Profiles... (" + progress + "/" + playerids.length + ")"
-              return (json)                                                      
+              if (json == "fail") {
+                return ({
+                  "_id": playerids[i + j * 50],
+                  "username": "",
+                  "followersCount": 0,
+                  "likesCount": 0,
+                  "publicTracksCount": 0,
+                  "isFollowedByMe": false,
+                  "leagueDate": "N/A",
+                  "leagueNr": 0,
+                  "levelData": {
+                      "isMaxLevel": false,
+                      "level": 0,
+                      "totalXp": 0,
+                      "xpInLevel": 0,
+                      "totalXpInLevel": 0
+                  }
+              })
+              } else {
+                return (json)
+              }
             })
         );
       }
-      const result = await Promise.all(fetches)
-      profiles = profiles.concat(result)
+      profiles = profiles.concat(await Promise.all(fetches))
       j += 1
     }
 
@@ -516,7 +564,13 @@ async function fetchInfo() {
 
 
   for (let i = 0; i < fetchedtracks.length; i++) {
-    fetchedtracks[i].json = fetchedjson[i]
+    if (fetchedtracks[i] != "fail" && fetchedjson[i] != "fail") {
+      fetchedtracks[i].json = fetchedjson[i]
+    } else {
+      fetchedtracks.splice(i, 1)
+      fetchedjson.splice(i, 1)
+      i--
+    }
   };
 
   loadingProgress.innerHTML = ""
@@ -524,6 +578,10 @@ async function fetchInfo() {
 
   
   calculate()
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 function calculate() {
