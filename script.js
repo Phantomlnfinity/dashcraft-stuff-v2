@@ -350,9 +350,9 @@ async function usePresetInfo() {
 
 async function retryFetch(tries, ...args) {
   if (tries > 0) {
-    await sleep(5)
+    await sleep(5000)
   }
-  if (tries > 20) {
+  if (tries > 10) {
     return "fail"
   }
   tries += 1
