@@ -1,4 +1,3 @@
-
 let fetchedtracks = [];
 let fetchedjson = [];
 let tracks = [];
@@ -136,7 +135,7 @@ function playerLookup() {
   if (usernameInput.value.length != 0) {
     filteredPlayers = players.filter((player) => player.username.includes(usernameInput.value))
     console.log(filteredPlayers)
-    for (let i = 0; i < filteredPlayers.length; i++) {
+    for (let i = 0; i < filteredPlayers.length && i < 50; i++) {
       playerList.innerHTML += "<br>" + playerHTML(filteredPlayers[i].id)
     }
 
