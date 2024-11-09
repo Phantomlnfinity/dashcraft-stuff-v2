@@ -180,7 +180,7 @@ function trackBrowser() {
     tracks = tracks.filter((filterTrack) => filterTrack.leaderboard.length == 0)
   } else if (tracksort.value == "position") {
     if (filteredPlayers.length == 1) {
-      tracks.sort(function(a, b) {
+      tracks.sort(function(b, a) {
         recordA = a.leaderboard.findIndex((c) => c.user._id == filteredPlayers[0].id)
         recordB = b.leaderboard.findIndex((c) => c.user._id == filteredPlayers[0].id)
         if (recordA >= 0 && recordB >= 0) {
