@@ -133,7 +133,12 @@ function playerLookup() {
 
   filteredPlayers = []
   if (usernameInput.value.length != 0) {
-    filteredPlayers = players.filter((player) => player.username.includes(usernameInput.value))
+    filteredPlayers = players.filter((player) => player.username.toLowerCase().includes(usernameInput.value.toLowerCase()))
+    let filteredPlayer = filteredPlayers.find((player) => player.username == usernameInput.value)
+    if (filteredPlayer) {
+      filteredPlayers = [filteredPlayer]
+    }
+
     console.log(filteredPlayers)
     for (let i = 0; i < filteredPlayers.length && i < 50; i++) {
       playerList.innerHTML += "<br>" + playerHTML(filteredPlayers[i].id)
