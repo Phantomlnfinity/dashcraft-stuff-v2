@@ -4,13 +4,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
-  <title>DashCraft Stuff</title>
+  <title>Dashcraft Stuff</title>
   <link rel="icon" type="image/png" sizes="32x32" href="https://dashcraft.io/assets/icons/favicon-32x32.png" />
   <link href="style.css" rel="stylesheet" type="text/css" />
   <script src="https://www.gstatic.com/charts/loader.js"></script>
 </head>
 
 <body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.0.4/pako.min.js"></script>
+
   <h2>Fetch Settings</h2>
   <div class="topstuff">
     <label class="container"> Verified Only
@@ -23,7 +25,7 @@
     <button type="button" onclick="fetchInfo()" style="width: 300px">Get Info</button>
       
     
-    <button type="button" onclick="usePresetInfo()" style="width: 300px">Preset Info (outdated but faster)</button>
+    <button type="button" id="usePresetInfo" onclick="usePresetInfo()" style="width: 300px">Preset Info (outdated but faster)</button>
    
   </div>
 
@@ -105,7 +107,7 @@
 
 
     
-    <script src="script.js"></script>
+    <script src="script (1).js"></script>
   </body>
 </div>
 
