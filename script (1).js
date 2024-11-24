@@ -156,13 +156,13 @@ function lbPageRight() {
 function trackPageLeft() {
   if (trackPage > 0) {
     trackPage--;
-    trackBrowser()
+    showTrackBrowser()
   }
 }
 function trackPageRight() {
   if (trackPage < Math.floor(tracks.length / 15)) {
     trackPage++;
-    trackBrowser()
+    showTrackBrowser()
   }
 }
 
@@ -305,6 +305,10 @@ async function trackBrowser(presetEnabled = false) {
     tracks = sortedTracks.map(track => track.track);
   }
   
+  showTrackBrowser(presetEnabled)
+}
+
+async function showTrackBrowser(presetEnabled = false) {
   var html = "";
   for (let i = trackPage*15; i < trackPage*15+15; i++) {
     if (i < tracks.length) {
