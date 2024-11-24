@@ -289,8 +289,9 @@ async function trackBrowser(presetEnabled = false) {
       return { track, points };
     }));
     sortedTracks.sort((a, b) => b.points - a.points);
+    tracks = sortedTracks.map(track => track.track);
   }
-              
+  
   var html = "";
   for (let i = trackPage*15; i < trackPage*15+15; i++) {
     if (i < tracks.length) {
@@ -424,7 +425,7 @@ async function usePresetInfo() {
       });
 
     players = await fetch1;
-    tracks = await loadGzippedJSON('./verified_tracks.json.gz');
+    fetchedtracks = await loadGzippedJSON('./verified_tracks.json.gz');
 
     usePreset = true;
   } else {
@@ -436,7 +437,7 @@ async function usePresetInfo() {
       });
 
     players = await fetch1;
-    tracks = await loadGzippedJSON('./global_tracks.json.gz');
+    fetchedtracks = await loadGzippedJSON('./global_tracks.json.gz');
     
     usePreset = true;
   }
@@ -670,62 +671,65 @@ async function fetchInfo() {
 
 
 async function calculate(presetEnabled = false, firstInstance = false) { 
-    // firstInstance meaning first run, so mapping doesn't occur twice
-
-    if (!presetEnabled) {
-
-  players = []
-//console.log(fetchedtracks)
-//console.log(fetchedjson)
-  tracks = structuredClone(fetchedtracks)
-    console.log(tracks)
+  // firstInstance meaning first run, so mapping doesn't occur twice
 
   if (recent25.checked) {
-    tracks = tracks.splice(0, 25)
+    tracks = structuredClone(fetchedtracks.slice(0, 25))
+  } else {
+    tracks = structuredClone(fetchedtracks)
   }
-  for (let i = 0; i < tracks.length; i++) {
-    if (removeserphal.checked) {
-      serphalpos = tracks[i].leaderboard.findIndex(x => x.user._id == "662334de69042c3463e0eefc")
-      if (serphalpos != -1) {
-        tracks[i].leaderboard.splice(serphalpos, 1)
+
+  if (removeserphal.checked) {
+    for (let i = 0; i < tracks.length; i++) {
+        serphalpos = tracks[i].leaderboard.findIndex(x => x.user._id == "662334de69042c3463e0eefc")
+        if (serphalpos != -1) {
+          tracks[i].leaderboard.splice(serphalpos, 1)
       }
     }
   }
   console.log("Number of tracks: " + tracks.length)
-  for (let i = 0; i < tracks.length; i++) {
-    if (!players.find(x => x.id == tracks[i].user._id)) {
-      players.push(await setPlayerJson(tracks[i].user))
-    }
-    var player = players.find(x => x.id == tracks[i].user._id);
-    player.tracks += 1;
 
-    for (let j = 0; j < tracks[i].leaderboard.length; j++) {
-      if (!players.find(x => x.id == tracks[i].leaderboard[j].user._id)) {
-        players.push(await setPlayerJson(tracks[i].leaderboard[j].user))
+
+  if (!presetEnabled) {
+
+    players = []
+    //console.log(fetchedtracks)
+    //console.log(fetchedjson)
+
+    for (let i = 0; i < tracks.length; i++) {
+      if (!players.find(x => x.id == tracks[i].user._id)) {
+        players.push(await setPlayerJson(tracks[i].user))
       }
-      var player = players.find(x => x.id == tracks[i].leaderboard[j].user._id)
-      player.totalPositions += 1
-      player.totalPos += j + 1
-      player.totalTime += tracks[i].leaderboard[j].time
-      player.dcpoints += Math.ceil((1.051271) ** (-j) * 1000000 / tracks.length)
-      player.tmpoints += Math.round(1000000 / tracks.length / (j + 1))
-      if (j == 0) {
-        player.wrcount += 1
+      var player = players.find(x => x.id == tracks[i].user._id);
+      player.tracks += 1;
+
+      for (let j = 0; j < tracks[i].leaderboard.length; j++) {
+        if (!players.find(x => x.id == tracks[i].leaderboard[j].user._id)) {
+          players.push(await setPlayerJson(tracks[i].leaderboard[j].user))
+        }
+        var player = players.find(x => x.id == tracks[i].leaderboard[j].user._id)
+        player.totalPositions += 1
+        player.totalPos += j + 1
+        player.totalTime += tracks[i].leaderboard[j].time
+        player.dcpoints += Math.ceil((1.051271) ** (-j) * 1000000 / tracks.length)
+        player.tmpoints += Math.round(1000000 / tracks.length / (j + 1))
+        if (j == 0) {
+          player.wrcount += 1
+        }
       }
     }
   }
-}
 
-    if (firstInstance) {
-        players.forEach(player => {
-            playerMap[player.id] = player;
-        });
-        console.log(playerMap);
+  if (firstInstance) {
+      players.forEach(player => {
+          playerMap[player.id] = player;
+      });
+      console.log(playerMap);
 
-        fetchedtracks.forEach((track, index) => {
-            trackIndexCache[track._id] = index;
-        });
-    }
+      fetchedtracks.forEach((track, index) => {
+          trackIndexCache[track._id] = index;
+      });
+  }
     
   leaderboard = []
   for (let i = 0; i < players.length; i++) {
