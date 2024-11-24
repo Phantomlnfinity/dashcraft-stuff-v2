@@ -33,7 +33,7 @@ verifiedonly.addEventListener('change', function() {
       document.getElementById('usePresetInfo').innerText = `Preset Info (outdated but faster)\n${timeAgo('2024-11-24')} ago -- 15x faster -- 15s -> 1s`;
   } else {
       // 13 seconds with preset, 42 minutes without.
-      document.getElementById('usePresetInfo').innerText = `Preset Info (outdated but faster)\n${timeAgo('2024-10-24')} ago -- 195x faster -- 42m -> 13s`;
+      document.getElementById('usePresetInfo').innerText = `Preset Info (outdated but faster)\n${timeAgo('2024-11-24')} ago -- 195x faster -- 42m -> 13s`;
   }
 });
 function timeAgo(date) {
@@ -136,8 +136,8 @@ google.charts.load('current', { packages: ['corechart'] });
 usernameInput.addEventListener('input', playerLookup)
 recent25.addEventListener('change', async function() {trackPage = 0; page = 0; await calculate(usePreset)})
 removeserphal.addEventListener('change', async function() {page = 0; await calculate(usePreset)})
-leaderboarddropdown.addEventListener('change', async function() {trackPage = 0; page = 0; await calculate(usePreset)})
-tracksort.addEventListener('change', async function() {trackPage = 0; await calculate(usePreset)})
+leaderboarddropdown.addEventListener('change', async function() {trackPage = 0; page = 0; await generateLeaderboard(usePreset)})
+tracksort.addEventListener('change', async function() {trackPage = 0; await trackBrowser(usePreset)})
 
 function lbPageLeft() {
   if (page > 0) {
@@ -241,6 +241,19 @@ async function playerLookup() {
 
 
 async function trackBrowser(presetEnabled = false) {
+  if (recent25.checked) {
+    if (tracks.length < 25) {
+      tracks = structuredClone(fetchedtracks.slice(0, 25))
+    }
+  } else {
+    if (tracks.length < fetchedtracks.length) {
+      tracks = structuredClone(fetchedtracks)
+    }
+  }
+
+
+
+
   //tracks = fetchedtracks;
   document.getElementById("trackpage").innerHTML = '<button type="button" onclick="trackPageLeft()">&lt;</button><b>Page ' + (trackPage+1) + '</b><button type="button" onclick="trackPageRight()" style="float:right;">&gt;</button>'
   if (tracksort.value == "new") {
@@ -346,6 +359,88 @@ async function playerHTML(playerId, presetEnabled = false) {
 }
 
 
+
+async function generateLeaderboard() {
+  leaderboard = []
+  for (let i = 0; i < players.length; i++) {
+    var useradded = true
+    if (leaderboarddropdown.value == "tmpoints" && players[i].tmpoints != 0) {
+      leaderboard.push([players[i].username, players[i].tmpoints])
+      charttype = "bar"
+      sortdir = "descending"
+      valuetype = "Points"
+    } else if (leaderboarddropdown.value == "dcpoints" && players[i].dcpoints != 0) {
+      leaderboard.push([players[i].username, players[i].dcpoints])
+      charttype = "bar"
+      sortdir = "descending"
+      valuetype = "Points"
+    } else if (leaderboarddropdown.value == "wrcount" && players[i].wrcount != 0) {
+      leaderboard.push([players[i].username, players[i].wrcount])
+      charttype = "pie"
+      sortdir = "descending"
+      valuetype = "World Records"
+    } else if (leaderboarddropdown.value == "averageposall" && players[i].totalPositions == tracks.length) {
+      leaderboard.push([players[i].username, Math.round(players[i].totalPos / players[i].totalPositions * 100) / 100])
+      charttype = "bar"
+      sortdir = "ascending"
+      valuetype = "Average Position"
+    } else if (leaderboarddropdown.value == "averagepos" && players[i].totalPositions != 0) {
+      leaderboard.push([players[i].username, Math.round(players[i].totalPos / players[i].totalPositions * 100) / 100])
+      charttype = "bar"
+      sortdir = "ascending"
+      valuetype = "Average Position"
+    } else if (leaderboarddropdown.value == "totaltime" && players[i].totalPositions == tracks.length) {
+      leaderboard.push([players[i].username, players[i].totalTime])
+      charttype = "bar"
+      sortdir = "ascending"
+      valuetype = "Time"
+    } else if (leaderboarddropdown.value == "level") {
+      leaderboard.push([players[i].username, players[i].levelData.level])
+      charttype = "bar"
+      sortdir = "descending"
+      valuetype = "Level"
+    } else if (leaderboarddropdown.value == "tracks" && players[i].tracks != 0) {
+      leaderboard.push([players[i].username, players[i].tracks])
+      charttype = "pie"
+      sortdir = "descending"
+      valuetype = "Tracks"
+    } else if (leaderboarddropdown.value == "followers" && players[i].followers != 0) {
+      leaderboard.push([players[i].username, players[i].followers])
+      charttype = "bar"
+      sortdir = "descending"
+      valuetype = "Followers"
+    } else if (leaderboarddropdown.value == "likes" && players[i].followers) {
+      leaderboard.push([players[i].username, players[i].likes])
+      charttype = "bar"
+      sortdir = "descending"
+      valuetype = "Likes"
+    } else {
+      useradded = false
+    }
+    if (useradded) {
+      leaderboard[leaderboard.length - 1].push(players[i])
+    }
+  } 
+  if (sortdir == "descending") {
+    leaderboard.sort((a, b) => b[1] - a[1])
+  } else if (sortdir == "ascending") {
+    leaderboard.sort((a, b) => a[1] - b[1])
+  }
+    
+  const data = new google.visualization.DataTable();
+  data.addColumn('string', 'Player');
+  data.addColumn('number', valuetype);
+  for (let i = 0; i < leaderboard.length; i++) {
+    data.addRow([leaderboard[i][0], leaderboard[i][1]])
+  }
+  drawChart(data, charttype)
+
+
+  drawLeaderboard()
+}
+
+
+
 async function drawLeaderboard(presetEnabled = false) {
   let html = "<table><tr><th style='width:15%'>Position</th><th style='width:70%'>Player</th><th style='width:15%'>" + valuetype + "</th></tr>"
   for (let i = 0; i < 20; i++) {
@@ -424,7 +519,7 @@ async function usePresetInfo() {
         return json;
       });
 
-    players = await fetch1;
+    profiles = await fetch1;
     fetchedtracks = await loadGzippedJSON('./verified_tracks.json.gz');
 
     usePreset = true;
@@ -436,7 +531,7 @@ async function usePresetInfo() {
         return json;
       });
 
-    players = await fetch1;
+    profiles = await fetch1;
     fetchedtracks = await loadGzippedJSON('./global_tracks.json.gz');
     
     usePreset = true;
@@ -690,32 +785,30 @@ async function calculate(presetEnabled = false, firstInstance = false) {
   console.log("Number of tracks: " + tracks.length)
 
 
-  if (!presetEnabled) {
 
-    players = []
-    //console.log(fetchedtracks)
-    //console.log(fetchedjson)
+  players = []
+  //console.log(fetchedtracks)
+  //console.log(fetchedjson)
 
-    for (let i = 0; i < tracks.length; i++) {
-      if (!players.find(x => x.id == tracks[i].user._id)) {
-        players.push(await setPlayerJson(tracks[i].user))
+  for (let i = 0; i < tracks.length; i++) {
+    if (!players.find(x => x.id == tracks[i].user._id)) {
+      players.push(await setPlayerJson(tracks[i].user))
+    }
+    var player = players.find(x => x.id == tracks[i].user._id);
+    player.tracks += 1;
+
+    for (let j = 0; j < tracks[i].leaderboard.length; j++) {
+      if (!players.find(x => x.id == tracks[i].leaderboard[j].user._id)) {
+        players.push(await setPlayerJson(tracks[i].leaderboard[j].user))
       }
-      var player = players.find(x => x.id == tracks[i].user._id);
-      player.tracks += 1;
-
-      for (let j = 0; j < tracks[i].leaderboard.length; j++) {
-        if (!players.find(x => x.id == tracks[i].leaderboard[j].user._id)) {
-          players.push(await setPlayerJson(tracks[i].leaderboard[j].user))
-        }
-        var player = players.find(x => x.id == tracks[i].leaderboard[j].user._id)
-        player.totalPositions += 1
-        player.totalPos += j + 1
-        player.totalTime += tracks[i].leaderboard[j].time
-        player.dcpoints += Math.ceil((1.051271) ** (-j) * 1000000 / tracks.length)
-        player.tmpoints += Math.round(1000000 / tracks.length / (j + 1))
-        if (j == 0) {
-          player.wrcount += 1
-        }
+      var player = players.find(x => x.id == tracks[i].leaderboard[j].user._id)
+      player.totalPositions += 1
+      player.totalPos += j + 1
+      player.totalTime += tracks[i].leaderboard[j].time
+      player.dcpoints += Math.ceil((1.051271) ** (-j) * 1000000 / tracks.length)
+      player.tmpoints += Math.round(1000000 / tracks.length / (j + 1))
+      if (j == 0) {
+        player.wrcount += 1
       }
     }
   }
@@ -731,83 +824,11 @@ async function calculate(presetEnabled = false, firstInstance = false) {
       });
   }
     
-  leaderboard = []
-  for (let i = 0; i < players.length; i++) {
-    var useradded = true
-    if (leaderboarddropdown.value == "tmpoints" && players[i].tmpoints != 0) {
-      leaderboard.push([players[i].username, players[i].tmpoints])
-      charttype = "bar"
-      sortdir = "descending"
-      valuetype = "Points"
-    } else if (leaderboarddropdown.value == "dcpoints" && players[i].dcpoints != 0) {
-      leaderboard.push([players[i].username, players[i].dcpoints])
-      charttype = "bar"
-      sortdir = "descending"
-      valuetype = "Points"
-    } else if (leaderboarddropdown.value == "wrcount" && players[i].wrcount != 0) {
-      leaderboard.push([players[i].username, players[i].wrcount])
-      charttype = "pie"
-      sortdir = "descending"
-      valuetype = "World Records"
-    } else if (leaderboarddropdown.value == "averageposall" && players[i].totalPositions == tracks.length) {
-      leaderboard.push([players[i].username, Math.round(players[i].totalPos / players[i].totalPositions * 100) / 100])
-      charttype = "bar"
-      sortdir = "ascending"
-      valuetype = "Average Position"
-    } else if (leaderboarddropdown.value == "averagepos" && players[i].totalPositions != 0) {
-      leaderboard.push([players[i].username, Math.round(players[i].totalPos / players[i].totalPositions * 100) / 100])
-      charttype = "bar"
-      sortdir = "ascending"
-      valuetype = "Average Position"
-    } else if (leaderboarddropdown.value == "totaltime" && players[i].totalPositions == tracks.length) {
-      leaderboard.push([players[i].username, players[i].totalTime])
-      charttype = "bar"
-      sortdir = "ascending"
-      valuetype = "Time"
-    } else if (leaderboarddropdown.value == "level") {
-      leaderboard.push([players[i].username, players[i].levelData.level])
-      charttype = "bar"
-      sortdir = "descending"
-      valuetype = "Level"
-    } else if (leaderboarddropdown.value == "tracks" && players[i].tracks != 0) {
-      leaderboard.push([players[i].username, players[i].tracks])
-      charttype = "pie"
-      sortdir = "descending"
-      valuetype = "Tracks"
-    } else if (leaderboarddropdown.value == "followers" && players[i].followers != 0) {
-      leaderboard.push([players[i].username, players[i].followers])
-      charttype = "bar"
-      sortdir = "descending"
-      valuetype = "Followers"
-    } else if (leaderboarddropdown.value == "likes" && players[i].followers) {
-      leaderboard.push([players[i].username, players[i].likes])
-      charttype = "bar"
-      sortdir = "descending"
-      valuetype = "Likes"
-    } else {
-      useradded = false
-    }
-    if (useradded) {
-      leaderboard[leaderboard.length - 1].push(players[i])
-    }
-  } 
-  if (sortdir == "descending") {
-    leaderboard.sort((a, b) => b[1] - a[1])
-  } else if (sortdir == "ascending") {
-    leaderboard.sort((a, b) => a[1] - b[1])
-  }
-    
-  const data = new google.visualization.DataTable();
-  data.addColumn('string', 'Player');
-  data.addColumn('number', valuetype);
-  for (let i = 0; i < leaderboard.length; i++) {
-    data.addRow([leaderboard[i][0], leaderboard[i][1]])
-  }
-  drawChart(data, charttype)
+  
 
 
   page = 0
-  await drawLeaderboard(presetEnabled)
+  await generateLeaderboard(presetEnabled)
   await trackBrowser(presetEnabled)
 
   document.getElementById("data").hidden = false;
@@ -842,10 +863,10 @@ function downloadCompressedJSON(obj, filename = 'data.json.gz') {
 
 function downloadPreset(version = 'verified') {
     if (version == 'verified') {
-        downloadJSON(players, 'verified_profiles.json');
+        downloadJSON(profiles, 'verified_profiles.json');
         downloadCompressedJSON(tracks, "verified_tracks.json.gz");
     } else if (version == 'global') {    
-        downloadJSON(players, 'global_profiles.json');
+        downloadJSON(profiles, 'global_profiles.json');
         downloadCompressedJSON(tracks, "global_tracks.json.gz");
     } else {
         console.log("Please specify if you want to download verified or global info.");
