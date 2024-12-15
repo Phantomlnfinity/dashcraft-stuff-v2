@@ -2,7 +2,7 @@
 let fetchedtracks = [];
 let fetchedjson = [];
 let tracks = [];
-let IDarr = ["https://dashcraft.io/?t=67296509d0bace19214a7da1", "https://dashcraft.io/?t=67422bc4d0bace1921bd83b7", "https://dashcraft.io/?t=67116a28d0bace1921b3aaf6", "https://dashcraft.io/?t=67416670d0bace1921bb7421", "https://dashcraft.io/?t=673aa258d0bace1921a3fda3", "https://dashcraft.io/?t=67394ce5d0bace19219b3db0", "https://dashcraft.io/?t=673caafcd0bace1921aba2dc", "https://dashcraft.io/?t=673a7d54d0bace1921a38c04", "https://dashcraft.io/?t=673a1630d0bace1921a2387f", "https://dashcraft.io/?t=67224240d0bace1921249baa", "https://dashcraft.io/?t=66f4c8e3f1b32b6e545fff48", "https://dashcraft.io/?t=673c3b78d0bace1921aa670f", "https://dashcraft.io/?t=673c273bd0bace1921aa3dfe", "https://dashcraft.io/?t=6728231cd0bace19214000bf", "https://dashcraft.io/?t=66f36694f1b32b6e5458433c", "https://dashcraft.io/?t=673e83d9d0bace1921b106c7", "https://dashcraft.io/?t=670de238d0bace19219abaa0", "https://dashcraft.io/?t=67356ad9d0bace19218d292a", "https://dashcraft.io/?t=673a1dd7d0bace1921a25a13", "https://dashcraft.io/?t=6757c78bd0bace1921ff20f2", "https://dashcraft.io/?t=674ecbbed0bace1921e6e1d5", "https://dashcraft.io/?t=6759cf93d0bace19210500dd", "https://dashcraft.io/?t=675c5765d0bace19210c8e78", "https://dashcraft.io/?t=675d4a47d0bace19210e9ca8", "https://dashcraft.io/?t=675d4efdd0bace19210ea9fc", "https://dashcraft.io/?t=675daa64d0bace1921116e78"]
+let IDarr = ["https://dashcraft.io/?t=67116a28d0bace1921b3aaf6", "https://dashcraft.io/?t=673aa258d0bace1921a3fda3", "https://dashcraft.io/?t=67422bc4d0bace1921bd83b7", "https://dashcraft.io/?t=6728231cd0bace19214000bf", "https://dashcraft.io/?t=673a7d54d0bace1921a38c04", "https://dashcraft.io/?t=675e97bdd0bace1921133c39", "https://dashcraft.io/?t=673a1dd7d0bace1921a25a13", "https://dashcraft.io/?t=67394ce5d0bace19219b3db0", "https://dashcraft.io/?t=673c3b78d0bace1921aa670f", "https://dashcraft.io/?t=675f2134d0bace19211486cb", "https://dashcraft.io/?t=674ecbbed0bace1921e6e1d5", "https://dashcraft.io/?t=66f4c8e3f1b32b6e545fff48", "https://dashcraft.io/?t=673c273bd0bace1921aa3dfe", "https://dashcraft.io/?t=67296509d0bace19214a7da1", "https://dashcraft.io/?t=670de238d0bace19219abaa0", "https://dashcraft.io/?t=67416670d0bace1921bb7421", "https://dashcraft.io/?t=6757c78bd0bace1921ff20f2", "https://dashcraft.io/?t=67356ad9d0bace19218d292a", "https://dashcraft.io/?t=673e83d9d0bace1921b106c7", "https://dashcraft.io/?t=66f36694f1b32b6e5458433c", "https://dashcraft.io/?t=675daa64d0bace1921116e78", "https://dashcraft.io/?t=67224240d0bace1921249baa", "https://dashcraft.io/?t=673caafcd0bace1921aba2dc", "https://dashcraft.io/?t=673a1630d0bace1921a2387f", "https://dashcraft.io?t=675f29dcd0bace1921149438"]
   .map(link => link.slice(-24));
 let players = [];
 let profiles = [];
@@ -161,7 +161,7 @@ function trackPageLeft() {
   }
 }
 function trackPageRight() {
-  if (trackPage < Math.floor(tracks.length / 15)) {
+  if (trackPage < Math.floor(tracks.length / 25)) {
     trackPage++;
     showTrackBrowser()
   }
@@ -311,7 +311,7 @@ async function trackBrowser(presetEnabled = false) {
 
 async function showTrackBrowser(presetEnabled = false) {
   var html = "";
-  for (let i = trackPage*15; i < trackPage*15+15; i++) {
+  for (let i = trackPage*25; i < trackPage*25+25; i++) {
     if (i < tracks.length) {
       html += '<div class="gallery"><a target="_blank" href="https://dashcraft.io/?t=' + tracks[i]._id + '">'
       html += '<img src="https://cdn.dashcraft.io/v2/prod/track-thumbnail/sm/' + tracks[i]._id + '.jpg?v=4">'
@@ -367,6 +367,7 @@ async function playerHTML(playerId, presetEnabled = false) {
 
 async function generateLeaderboard() {
   leaderboard = []
+  console.log(leaderboarddropdown.value)
   for (let i = 0; i < players.length; i++) {
     var useradded = true
     if (leaderboarddropdown.value == "finishes" && players[i].tmpoints != 0) {
@@ -840,7 +841,8 @@ async function calculate(presetEnabled = false, firstInstance = false) {
 
 
   page = 0
-  await generateLeaderboard(presetEnabled)
+  console.log(players)
+  if (players.some(player => player.tmpoints > 0)) await generateLeaderboard(presetEnabled)
   await trackBrowser(presetEnabled)
 
   document.getElementById("data").hidden = false;
