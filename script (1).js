@@ -2,7 +2,8 @@
 let fetchedtracks = [];
 let fetchedjson = [];
 let tracks = [];
-let IDarr = [];
+let IDarr = ["https://dashcraft.io/?t=67296509d0bace19214a7da1", "https://dashcraft.io/?t=67422bc4d0bace1921bd83b7", "https://dashcraft.io/?t=67116a28d0bace1921b3aaf6", "https://dashcraft.io/?t=67416670d0bace1921bb7421", "https://dashcraft.io/?t=673aa258d0bace1921a3fda3", "https://dashcraft.io/?t=67394ce5d0bace19219b3db0", "https://dashcraft.io/?t=673caafcd0bace1921aba2dc", "https://dashcraft.io/?t=673a7d54d0bace1921a38c04", "https://dashcraft.io/?t=673a1630d0bace1921a2387f", "https://dashcraft.io/?t=67224240d0bace1921249baa", "https://dashcraft.io/?t=66f4c8e3f1b32b6e545fff48", "https://dashcraft.io/?t=673c3b78d0bace1921aa670f", "https://dashcraft.io/?t=673c273bd0bace1921aa3dfe", "https://dashcraft.io/?t=6728231cd0bace19214000bf", "https://dashcraft.io/?t=66f36694f1b32b6e5458433c", "https://dashcraft.io/?t=673e83d9d0bace1921b106c7", "https://dashcraft.io/?t=670de238d0bace19219abaa0", "https://dashcraft.io/?t=67356ad9d0bace19218d292a", "https://dashcraft.io/?t=673a1dd7d0bace1921a25a13", "https://dashcraft.io/?t=6757c78bd0bace1921ff20f2", "https://dashcraft.io/?t=674ecbbed0bace1921e6e1d5", "https://dashcraft.io/?t=6759cf93d0bace19210500dd", "https://dashcraft.io/?t=675c5765d0bace19210c8e78", "https://dashcraft.io/?t=675d4a47d0bace19210e9ca8", "https://dashcraft.io/?t=675d4efdd0bace19210ea9fc", "https://dashcraft.io/?t=675daa64d0bace1921116e78"]
+  .map(link => link.slice(-24));
 let players = [];
 let profiles = [];
 let working = false;
@@ -25,37 +26,37 @@ const loadingProgress = document.getElementById("loadingProgress");
 let verifiedonlybackup = false
 
 // 1 second with preset, 15 seconds without.
-document.getElementById('usePresetInfo').innerText = `Preset Info (outdated but faster)\n${timeAgo('2024-11-24')} ago -- 15x faster -- 15s -> 1s`;
+// document.getElementById('usePresetInfo').innerText = `Preset Info (outdated but faster)\n${timeAgo('2024-11-24')} ago -- 15x faster -- 15s -> 1s`;
 
-verifiedonly.addEventListener('change', function() {
-  if (this.checked) {
+// verifiedonly.addEventListener('change', function() {
+  // if (this.checked) {
       // 1 second with preset, 15 seconds without.
-      document.getElementById('usePresetInfo').innerText = `Preset Info (outdated but faster)\n${timeAgo('2024-11-24')} ago -- 15x faster -- 15s -> 1s`;
-  } else {
-      // 13 seconds with preset, 42 minutes without.
-      document.getElementById('usePresetInfo').innerText = `Preset Info (outdated but faster)\n${timeAgo('2024-11-24')} ago -- 195x faster -- 42m -> 13s`;
-  }
-});
-function timeAgo(date) {
-    const targetDate = new Date(date);
-    const today = new Date();
-    let years = today.getFullYear() - targetDate.getFullYear();
-    let months = today.getMonth() - targetDate.getMonth();
-    let days = today.getDate() - targetDate.getDate();
-    if (days < 0) {
-        months--;
-        days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();  // Get the last day of the previous month
-    }
-    if (months < 0) {
-        years--;
-        months += 12;
-    }
-    let result = [];
-    if (years > 0) result.push(`${years}yr`);
-    if (months > 0) result.push(`${months}mo`);
-    if (days > 0) result.push(`${days}d`);
-    return result.join(' ') || '0d';
-}
+//       document.getElementById('usePresetInfo').innerText = `Preset Info (outdated but faster)\n${timeAgo('2024-11-24')} ago -- 15x faster -- 15s -> 1s`;
+//   } else {
+//       // 13 seconds with preset, 42 minutes without.
+//       document.getElementById('usePresetInfo').innerText = `Preset Info (outdated but faster)\n${timeAgo('2024-11-24')} ago -- 195x faster -- 42m -> 13s`;
+//   }
+// });
+// function timeAgo(date) {
+//     const targetDate = new Date(date);
+//     const today = new Date();
+//     let years = today.getFullYear() - targetDate.getFullYear();
+//     let months = today.getMonth() - targetDate.getMonth();
+//     let days = today.getDate() - targetDate.getDate();
+//     if (days < 0) {
+//         months--;
+//         days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();  // Get the last day of the previous month
+//     }
+//     if (months < 0) {
+//         years--;
+//         months += 12;
+//     }
+//     let result = [];
+//     if (years > 0) result.push(`${years}yr`);
+//     if (months > 0) result.push(`${months}mo`);
+//     if (days > 0) result.push(`${days}d`);
+//     return result.join(' ') || '0d';
+// }
     
 async function setPlayerJson(user, retry = false) {
   let playerJson = { 
@@ -368,7 +369,12 @@ async function generateLeaderboard() {
   leaderboard = []
   for (let i = 0; i < players.length; i++) {
     var useradded = true
-    if (leaderboarddropdown.value == "tmpoints" && players[i].tmpoints != 0) {
+    if (leaderboarddropdown.value == "finishes" && players[i].tmpoints != 0) {
+      leaderboard.push([players[i].username, players[i].totalPositions])
+      charttype = "bar"
+      sortdir = "descending"
+      valuetype = "Points"
+    } else if (leaderboarddropdown.value == "tmpoints" && players[i].tmpoints != 0) {
       leaderboard.push([players[i].username, players[i].tmpoints])
       charttype = "bar"
       sortdir = "descending"
@@ -514,36 +520,36 @@ async function usePresetInfo() {
         return JSON.parse(decompressed);
     }
     
-    if (verifiedonly.checked) {
-      verifiedonlychecked = true
+  //   if (verifiedonly.checked) {
+  //     verifiedonlychecked = true
 
-      fetch1 = fetch('./verified_profiles.json')
-      .then((response) => response.json())
-      .then((json) => {
-        return json;
-      });
+  //     fetch1 = fetch('./verified_profiles.json')
+  //     .then((response) => response.json())
+  //     .then((json) => {
+  //       return json;
+  //     });
 
-    profiles = await fetch1;
-    fetchedtracks = await loadGzippedJSON('./verified_tracks.json.gz');
+  //   profiles = await fetch1;
+  //   fetchedtracks = await loadGzippedJSON('./verified_tracks.json.gz');
 
-    usePreset = true;
-  } else {
-    verifiedonlychecked = false
-    fetch1 = fetch('./global_profiles.json')
-      .then((response) => response.json())
-      .then((json) => {
-        return json;
-      });
+  //   usePreset = true;
+  // } else {
+  //   verifiedonlychecked = false
+  //   fetch1 = fetch('./global_profiles.json')
+  //     .then((response) => response.json())
+  //     .then((json) => {
+  //       return json;
+  //     });
 
-    profiles = await fetch1;
-    fetchedtracks = await loadGzippedJSON('./global_tracks.json.gz');
+  //   profiles = await fetch1;
+  //   fetchedtracks = await loadGzippedJSON('./global_tracks.json.gz');
     
-    usePreset = true;
-  }
+  //   usePreset = true;
+  // }
 
-  loadingProgress.innerHTML = ""
+  // loadingProgress.innerHTML = ""
 
-  await calculate(true, true);
+  // await calculate(true, true);
 }
 
 async function fetchWithRetry(url, options = {}, retries = 3, delay = 1000, log = true) {
@@ -587,56 +593,58 @@ async function fetchInfo() {
  //   }
  // }
 
-  const baseUrl = "https://api.dashcraft.io/trackv2/global3?sort=new&verifiedOnly=";
-  const url = verifiedonly.checked ? `${baseUrl}true&page=` : `${baseUrl}false&page=`;
+  // const baseUrl = "https://api.dashcraft.io/trackv2/global3?sort=new&verifiedOnly=";
+  // const url = verifiedonly.checked ? `${baseUrl}true&page=` : `${baseUrl}false&page=`;
   
   let progress = 0;
-  loadingProgress.innerHTML = "Fetching Tracks... (0)";
+  // loadingProgress.innerHTML = "Fetching Tracks... (0)";
   start = Date.now();
 
-  let done = false;
-  let j = 0;
-  let IDarr = [];
+  // let done = false;
+  // let j = 0;
+  // let IDarr = [];
 
-  while (!done) {
-    let fetches = [];
+  // while (!done) {
+  //   let fetches = [];
     
-    for (let i = 0; i < 50; i++) {
-      fetches.push(
-        fetchWithRetry(url + (j * 50 + i) + "&pageSize=50")
-          .then((json) => {
-            if (json === null) return []; // Skip failed requests
-            progress += 1;
-            if (progress % 100 === 0 || done) {
-              loadingProgress.innerHTML = `Fetching Tracks... (${progress * 50})`;
-            }
-            let json1 = json.tracks;
-            let IDarr = [];
-            for (let a = 0; a < json1.length; a++) {
-              IDarr.push(json1[a]._id);
-            }
-            return IDarr;
-          })
-      );
-    }
+  //   for (let i = 0; i < 50; i++) {
+  //     fetches.push(
+  //       fetchWithRetry(url + (j * 50 + i) + "&pageSize=50")
+  //         .then((json) => {
+  //           if (json === null) return []; // Skip failed requests
+  //           progress += 1;
+  //           if (progress % 100 === 0 || done) {
+  //             loadingProgress.innerHTML = `Fetching Tracks... (${progress * 50})`;
+  //           }
+  //           let json1 = json.tracks;
+  //           let IDarr = [];
+  //           for (let a = 0; a < json1.length; a++) {
+  //             IDarr.push(json1[a]._id);
+  //           }
+  //           return IDarr;
+  //         })
+  //     );
+  //   }
 
-    const result = await Promise.all(fetches);
-    const successfulResults = result.filter(res => res !== null);
+  //   const result = await Promise.all(fetches);
+  //   const successfulResults = result.filter(res => res !== null);
 
-    if (successfulResults.length > 0 && successfulResults[successfulResults.length - 1].length < 50) {
-      done = true;
-    }
+  //   if (successfulResults.length > 0 && successfulResults[successfulResults.length - 1].length < 50) {
+  //     done = true;
+  //   }
 
-    for (let i = 0; i < successfulResults.length; i++) {
-      IDarr = IDarr.concat(successfulResults[i]);
-    }
-    j += 1;
-  }
+  //   for (let i = 0; i < successfulResults.length; i++) {
+  //     IDarr = IDarr.concat(successfulResults[i]);
+  //   }
+  //   j += 1;
+  // }
 
-  console.log("ID fetch time: " + (Date.now() - start) + "ms");
+  // console.log("ID fetch time: " + (Date.now() - start) + "ms");
+
+
 
   // Second stage: Fetching track details
-  loadingProgress.innerHTML = "Fetching Tracks... (0/" + IDarr.length + ")";
+  // loadingProgress.innerHTML = "Fetching Tracks... (0/" + IDarr.length + ")";
   progress = 0;
   done = false;
   j = 0;
@@ -658,7 +666,7 @@ async function fetchInfo() {
             if (json === null) return {}; // Skip failed requests
             progress += 1;
             if (progress % 100 === 0 || done) {
-              loadingProgress.innerHTML = `Fetching Tracks... (${progress}/${IDarr.length})`;
+              // loadingProgress.innerHTML = `Fetching Tracks... (${progress}/${IDarr.length})`;
             }
             return json;
           })
@@ -673,7 +681,7 @@ async function fetchInfo() {
   console.log("Track fetch time: " + (Date.now() - start) + "ms");
 
   // Third stage: Fetching JSON data for each track
-  loadingProgress.innerHTML = "Fetching Track JSON... (0/" + IDarr.length + ")";
+  // loadingProgress.innerHTML = "Fetching Track JSON... (0/" + IDarr.length + ")";
   progress = 0;
   done = false;
   j = 0;
@@ -691,7 +699,7 @@ async function fetchInfo() {
           if (json === null) return {}; // Skip failed requests
           progress += 1;
           if (progress % 100 === 0 || done) {
-            loadingProgress.innerHTML = `Fetching Track JSON... (${progress}/${IDarr.length})`;
+            // loadingProgress.innerHTML = `Fetching Track JSON... (${progress}/${IDarr.length})`;
           }
           return json;
         })
@@ -720,7 +728,7 @@ async function fetchInfo() {
       }
     }
 
-    loadingProgress.innerHTML = "Fetching Profiles... (0/" + playerids.length + ")";
+    // loadingProgress.innerHTML = "Fetching Profiles... (0/" + playerids.length + ")";
     progress = 0;
     done = false;
     j = 0;
@@ -742,7 +750,7 @@ async function fetchInfo() {
               if (json === null) return {}; // Skip failed requests
               progress += 1;
               if (progress % 10 === 0 || done) {
-                loadingProgress.innerHTML = `Fetching Profiles... (${progress}/${playerids.length})`;
+                // loadingProgress.innerHTML = `Fetching Profiles... (${progress}/${playerids.length})`;
               }
               return json;
             })
@@ -764,7 +772,7 @@ async function fetchInfo() {
     fetchedtracks[i].json = fetchedjson[i];
   }
 
-  loadingProgress.innerHTML = "";
+  // loadingProgress.innerHTML = "";
   await calculate(false, true);
 }
 
@@ -876,3 +884,6 @@ function downloadPreset(version = 'verified') {
         console.log("Please specify if you want to download verified or global info.");
     }
 }
+
+
+fetchInfo()
