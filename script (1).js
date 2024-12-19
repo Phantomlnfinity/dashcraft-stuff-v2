@@ -368,6 +368,7 @@ async function generateLeaderboard() {
   leaderboard = []
   for (let i = 0; i < players.length; i++) {
     var useradded = true
+    
     if (leaderboarddropdown.value == "tmpoints" && players[i].tmpoints != 0) {
       leaderboard.push([players[i].username, players[i].tmpoints])
       charttype = "bar"
